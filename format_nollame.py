@@ -14,39 +14,66 @@ def Format_Detector(file):
     onlyNeededCh = True
     phoneStartsW0 = False
 
-    with open(file, 'r') as fcsv:
-        lines = fcsv.readlines()
-        for i, line in enumerate(lines):
-            
-            if re.search(r'"', line) or re.search(r"'", line):
+    def CuotesDetector(line):
+        if re.search(r'"', line) or re.search(r"'", line):
                 onlyNeededCh = False
                 # Se edita el archivo en memoria para poder analizarlo correctamente
                 line = re.sub(r'"', "", line)
                 line = re.sub(r"'", "", line)
+        else:
+            onlyNeededCh = True
+        return onlyNeededCh
+
+    def HeadersDetector(line):
+        if 'key' in line and 'value' in line:
+            headers = True
+        else:
+            headers = False
+        return headers
+
+    def GetSeparator(line):
+        if ',' in line:
+            separator = (True, ',')
+        else: # Se combina RegEx con replaces para detectar el separador individualmente de los saltos de linea y otros caracteres
+            separator = (False, re.sub(r"[A-Za-z0-9]", "", line.replace("\\n", "")).replace(" ", "").replace("\t", "").replace("\n", ""))
+
+        return separator
+
+    def GetColumns(lines, separator):
+        if len(lines[i].split(separator[1])) == 2:
+            columnsOk = (True, len(lines[i].split(separator[1])))
+        else:
+            columnsOk = (False, len(lines[i].split(separator[1])))
+        return columnsOk
+
+    with open(file, 'r') as fcsv:
+        lines = fcsv.readlines()
+        for i, line in enumerate(lines):
             
+            onlyNeededCh = CuotesDetector(line)
 
             if i == 0:
-                if 'key' in line and 'value' in line:
-                    headers = True
+                headers = HeadersDetector(line)
 
-                if ',' in line:
-                    separator = (True, ',')
-                else: # Se combina RegEx con replaces para detectar el separador individualmente de los saltos de linea y otros caracteres
-                    separator = (False, re.sub(r"[A-Za-z0-9]", "", line.replace("\\n", "")).replace(" ", "").replace("\t", "").replace("\n", ""))
-                
-                if len(lines[i].split(separator[1])) == 2:
-                    columnsOk = (True, len(lines[i].split(separator[1])))
-                else:
-                    columnsOk = (False, len(lines[i].split(separator[1])))
+                separator = GetSeparator(line)
+
+                columnsOk = GetColumns(lines, separator)
 
             if line[0] == "0" and line[1] != "9":
                 phoneStartsW0 = True
 
             if i != 0:
-                if line.startswith("0") and line[1] == "9":
+                if line[0] == "0" and line[1] == "9":
                     numFormat = True
 
     return headers, numFormat, separator, columnsOk, onlyNeededCh, phoneStartsW0
+
+def NewOutputFile(output_fileName):
+    if os.path.exists(output_fileName): # Elimina el archivo si existe
+            os.remove(output_fileName)
+
+    with open(output_fileName, 'w') as fcsv: # Crea el archivo de salida en blanco
+        pass
 
 def CSVformatter(corrections, file, output_fileName):
     """
@@ -61,12 +88,7 @@ def CSVformatter(corrections, file, output_fileName):
     onlyNeededCh = corrections[4]
     phoneStartsW0 = corrections[5]
     
-
-    if os.path.exists(output_fileName): # Elimina el archivo si existe
-        os.remove(output_fileName)
-
-    with open(output_fileName, 'w') as fcsv: # Crea el archivo de salida en blanco
-            pass
+    NewOutputFile(output_fileName)
     
     with open(file, 'r') as fcsv: # Guarda la entrada
         main_file_lines = fcsv.readlines()
