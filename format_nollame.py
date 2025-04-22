@@ -99,19 +99,7 @@ def CSVformatter(corrections, file, output_fileName):
                 line = line.replace(separatorChar,",")
             fcsv.write(line)
 
-if __name__ == "__main__":
-    if len(sys.argv) >= 4 or len(sys.argv) < 2:
-        print("Usage: python format_nollame.py <input_file> [output_file]")
-        sys.exit(1)
-    
-    file = sys.argv[1]
-    full_route_file = os.path.abspath(file)
-
-    output_fileName = sys.argv[2] if len(sys.argv) == 3 else full_route_file.replace(".csv", "_formatted.csv")
-
-    corrections = Format_Detector(full_route_file)
-    
-
+def Reporter(corrections):
     print("\nContiene comillas dobles o simples: ", not corrections[4])
     print("Tiene headers: ",corrections[0])
     print("Tiene formato numerico: ",corrections[1])
@@ -120,9 +108,30 @@ if __name__ == "__main__":
     print("Cantidad de colunas:",corrections[3][1])
     print("Los telefonos fijos empiezan con 0: ",corrections[5], "\n")
 
+def PendingCorrections(corrections):
     if not corrections[0] or not corrections[1] or not corrections[2][0] or not corrections[3][0] or not corrections[4]:
-        CSVformatter(corrections, full_route_file, output_fileName)
+        return True
+    else:
+        return False
+
+if __name__ == "__main__":
+    if len(sys.argv) >= 4 or len(sys.argv) < 2:
+        print("Usage: python format_nollame.py <input_file> [output_file]")
+        sys.exit(1)
+    
+    file = sys.argv[1]
+
+    full_route_file = os.path.abspath(file)
+
+    output_fileName = sys.argv[2] if len(sys.argv) == 3 else full_route_file.replace(".csv", "_formatted.csv")
+
+    corrections = Format_Detector(full_route_file)
+    
+    Reporter(corrections)
+
+    if PendingCorrections(corrections):
         print("El archivo no tiene el formato correcto")
+        CSVformatter(corrections, full_route_file, output_fileName)
         print("El archivo fue formateado en: ",output_fileName)
         sys.exit(1)
     else:
