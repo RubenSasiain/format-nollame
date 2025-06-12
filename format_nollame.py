@@ -20,7 +20,7 @@ def Format_Detector(file):
     Ord: Headers, formato numerico, separadores, (ToF, N° columnas), solo caracteres necesarios, celulares con cel[0]=0 + tlf sin tlf[0]=0, tiene texto
     """
     headers = False
-    numFormat = False
+    numFormat = True
     separator = (False, None)
     columnsOk = (False, 0)
     hadCuotes = False
@@ -75,10 +75,10 @@ def Format_Detector(file):
 
             if i != 0:
                 if line[0] == "0" and line[1] == "9":
-                    numFormat = True
+                    numFormat = False
 
                 if line[0] == "0" and line[1] != "9":
-                    phoneFormat = False
+                    phoneFormat = True
 
     return headers, numFormat, separator, columnsOk, hadCuotes, phoneFormat, containText
 
