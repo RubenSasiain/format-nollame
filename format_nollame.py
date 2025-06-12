@@ -15,25 +15,22 @@ def ContainsText(line):
 def Format_Detector(file):
     """
     Detecta los fallos del formato del archivo csv y los reporta a la salida estandar. 
-    Ord: Headers, formato numerico, separadores, cantidad de columnas, solo caracteres necesarios, los celulares empiezan con 0 y los telefonos no
+    Ord: Headers, formato numerico, separadores, (ToF, N° columnas), solo caracteres necesarios, celulares con cel[0]=0 + tlf sin tlf[0]=0, tiene texto
     """
     headers = False
     numFormat = False
     separator = (False, None)
     columnsOk = (False, 0)
-    onlyNeededCh = True
+    hadCuotes = False
     phoneStartsW0 = False
     containText = False
 
     def CuotesDetector(line):
         if re.search(r'"', line) or re.search(r"'", line):
-                onlyNeededCh = False
-                # Se edita el archivo en memoria para poder analizarlo correctamente
-                line = re.sub(r'"', "", line)
-                line = re.sub(r"'", "", line)
+                hadCuotes = True
         else:
-            onlyNeededCh = True
-        return onlyNeededCh
+            hadCuotes = False
+        return hadCuotes
 
     def HeadersDetector(line):
         if 'key' in line and 'value' in line:
@@ -64,7 +61,7 @@ def Format_Detector(file):
         lines = fcsv.readlines()
         for i, line in enumerate(lines):
             
-            onlyNeededCh = CuotesDetector(line)
+            hadCuotes = CuotesDetector(line)
 
             if i == 0:
                 headers = HeadersDetector(line)
@@ -81,7 +78,7 @@ def Format_Detector(file):
                 if line[0] == "0" and line[1] == "9":
                     numFormat = True
 
-    return headers, numFormat, separator, columnsOk, onlyNeededCh, phoneStartsW0, containText
+    return headers, numFormat, separator, columnsOk, hadCuotes, phoneStartsW0, containText
 
 def NewOutputFile(output_fileName):
     if os.path.exists(output_fileName): # Elimina el archivo si existe
@@ -147,23 +144,25 @@ def CSVformatter(corrections, file, output_fileName):
                 fcsv.write(line)
 
 def Reporter(corrections):
-    print("\nContiene comillas dobles o simples: ", not corrections[4])
-    print("Tiene headers: ",corrections[0])
-    print("Tiene formato numerico: ",corrections[1])
-    print("Tiene separador correcto: ",corrections[2][0])
-    print("Separador: ",corrections[2][1][0] if corrections[2][1] != None else "None")
-    print("Cantidad de colunas:",corrections[3][1])
-    print("Los telefonos fijos empiezan con 0: ",corrections[5], "\n")
+    logger("---------------------------------------------------------------")
+    logger("\nContiene comillas dobles o simples: ", not corrections[4])
+    logger("Tiene headers: ",corrections[0])
+    logger("Tiene formato numerico: ",corrections[1])
+    logger("Tiene separador correcto: ",corrections[2][0])
+    logger("Separador: ",corrections[2][1][0] if corrections[2][1] != None else "None")
+    logger("Cantidad de colunas:",corrections[3][1])
+    logger("Los telefonos fijos empiezan con 0: ",corrections[5], "\n")
+    logger("---------------------------------------------------------------\n\n\n")
 
 def PendingCorrections(corrections):
-    if not corrections[0] or not corrections[1] or not corrections[2][0] or not corrections[3][0] or not corrections[4]:
+    if False in corrections:
         return True
     else:
         return False
 
 def usage():
     if len(sys.argv) >= 3 or len(sys.argv) < 2:
-        print("Usage: python format_nollame.py <input_file> [output_file]")
+        logger("Usage: python format_nollame.py <input_file> [output_file]")
         sys.exit(1)
 
 
@@ -185,9 +184,10 @@ if __name__ == "__main__":
     Reporter(corrections)
 
     if PendingCorrections(corrections):
-        print("El archivo no tiene el formato correcto")
+        logger("El archivo no tiene el formato correcto")
         CSVformatter(corrections, full_route_file, output_fileName)
-        print("El archivo fue formateado en: ",output_fileName)
+        logger("El archivo fue formateado en: ",output_fileName)
         sys.exit(1)
     else:
-        print("El archivo tiene el formato correcto")
+        logger("El archivo tiene el formato correcto")
+        
