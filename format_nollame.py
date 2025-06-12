@@ -36,6 +36,9 @@ def Format_Detector(file):
             separator = (True, ',')
         else: # Se combina RegEx con replaces para detectar el separador individualmente de los saltos de linea y otros caracteres
             separator = (False, re.sub(r"[A-Za-z0-9]", "", line.replace("\\n", "")).replace(" ", "").replace("\t", "").replace("\n", ""))
+        
+        if separator == (False, ""):
+            separator = (False, "undef")
 
         return separator
 
@@ -56,8 +59,8 @@ def Format_Detector(file):
                 headers = HeadersDetector(line)
 
                 separator = GetSeparator(line)
-
-                columnsOk = GetColumns(lines, separator)
+                if separator[1] != "undef":
+                    columnsOk = GetColumns(lines, separator)
 
             if line[0] == "0" and line[1] != "9":
                 phoneStartsW0 = True
@@ -136,16 +139,24 @@ def PendingCorrections(corrections):
     else:
         return False
 
-if __name__ == "__main__":
-    if len(sys.argv) >= 4 or len(sys.argv) < 2:
+def usage():
+    if len(sys.argv) >= 3 or len(sys.argv) < 2:
         print("Usage: python format_nollame.py <input_file> [output_file]")
         sys.exit(1)
-    
+
+
+if __name__ == "__main__":
+
+    usage()
+
     file = sys.argv[1]
-
+    outputFolder = ".\\procesados"
+    output_fileName = os.path.join(outputFolder, "nollame.csv")
+    if (not os.path.isdir(outputFolder)):
+        os.makedirs(outputFolder)
     full_route_file = os.path.abspath(file)
+    
 
-    output_fileName = sys.argv[2] if len(sys.argv) == 3 else full_route_file.replace(".csv", "_formatted.csv")
 
     corrections = Format_Detector(full_route_file)
     
