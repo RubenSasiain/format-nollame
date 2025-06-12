@@ -1,6 +1,11 @@
 import sys
 import os
 import re
+from datetime import datetime
+
+def logger(message):
+    with open("pause_logs.log", "a") as f:
+        f.write(f"{datetime.now()} - {message}\n")
 
 def ContainsText(line):
     if bool(re.search(r'[a-zA-Z]',line)):
