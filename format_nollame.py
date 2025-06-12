@@ -183,16 +183,16 @@ if __name__ == "__main__":
 
 
     corrections = Format_Detector(full_route_file)
-    
     Reporter(corrections)
 
     if PendingCorrections(corrections):
         logger("El archivo no tiene el formato correcto")
         CSVformatter(corrections, full_route_file, output_fileName)
         logger("El archivo fue formateado en: ",output_fileName)
-        sys.exit(1)
     else:
         logger("El archivo tiene el formato correcto")
         shutil.copy(file,output_fileName)
-        sys.exit(1)
+        logger("El archivo fue copiado en: ",output_fileName)
+
+    sys.exit(1)
         
