@@ -147,7 +147,7 @@ def CSVformatter(corrections, file, output_fileName):
 
 def Reporter(corrections):
     logger("---------------------------------------------------------------")
-    logger("Contiene comillas dobles o simples: " + str( not corrections[4]))
+    logger("Contiene comillas dobles o simples: " + str(corrections[4]))
     logger("Tiene headers: " + str(corrections[0]))
     logger("Tiene formato numerico: "+ str(corrections[1]))
     logger("Tiene separador correcto: "+ str(corrections[2][0]))
