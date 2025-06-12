@@ -2,6 +2,11 @@ import sys
 import os
 import re
 
+def ContainsText(line):
+    if bool(re.search(r'[a-zA-Z]',line)):
+        return True
+    return False
+
 def Format_Detector(file):
     """
     Detecta los fallos del formato del archivo csv y los reporta a la salida estandar. 
@@ -9,10 +14,11 @@ def Format_Detector(file):
     """
     headers = False
     numFormat = False
-    separator = (False, "undef")
+    separator = (False, None)
     columnsOk = (False, 0)
     onlyNeededCh = True
     phoneStartsW0 = False
+    containText = False
 
     def CuotesDetector(line):
         if re.search(r'"', line) or re.search(r"'", line):
@@ -38,7 +44,7 @@ def Format_Detector(file):
             separator = (False, re.sub(r"[A-Za-z0-9]", "", line.replace("\\n", "")).replace(" ", "").replace("\t", "").replace("\n", ""))
         
         if separator == (False, ""):
-            separator = (False, "undef")
+            separator = (False, None)
 
         return separator
 
@@ -57,10 +63,11 @@ def Format_Detector(file):
 
             if i == 0:
                 headers = HeadersDetector(line)
-
                 separator = GetSeparator(line)
-                if separator[1] != "undef":
+                if separator[1] != None:
                     columnsOk = GetColumns(lines, separator)
+            else:
+                containText = ContainsText(line)
 
             if line[0] == "0" and line[1] != "9":
                 phoneStartsW0 = True
@@ -69,7 +76,7 @@ def Format_Detector(file):
                 if line[0] == "0" and line[1] == "9":
                     numFormat = True
 
-    return headers, numFormat, separator, columnsOk, onlyNeededCh, phoneStartsW0
+    return headers, numFormat, separator, columnsOk, onlyNeededCh, phoneStartsW0, containText
 
 def NewOutputFile(output_fileName):
     if os.path.exists(output_fileName): # Elimina el archivo si existe
@@ -86,11 +93,11 @@ def CSVformatter(corrections, file, output_fileName):
     headers = corrections[0]
     numFormat = corrections[1]
     separator = corrections[2]
-    separatorChar = separator[1][0]
+    separatorChar = separator[1][0] if separator[1] != None else separator[1]
     columnsOk = corrections[3][0]
     onlyNeededCh = corrections[4]
     phoneStartsW0 = corrections[5]
-    
+
     NewOutputFile(output_fileName)
     
     with open(file, 'r') as fcsv: # Guarda la entrada
@@ -104,32 +111,42 @@ def CSVformatter(corrections, file, output_fileName):
                 line = re.sub(r"'", "", line)
                 line = re.sub(r"\t","", line)
 
+            
             if i == 0 and not headers:
                 fcsv.write('key,value\n')
 
-            if not columnsOk:
-                line = main_file_lines[i].split(separatorChar)
-                if len(line) > 1:
-                    line = line[0] + "," + line[1] + "\n"
-                else:
-                    line = line[0] + "," + line[0] + "\n"
-            
-            if not numFormat and line[0] == "9": # Agrega un 0 al principio de los celulares que no lo tienen
-                line = line.replace(line,"0"+line)
-            
-            if (phoneStartsW0) and ("key" not in line) and (line[1] != "9"): # Saca el 0 de los telefonos fijos en caso de que todos los numeros tengan 0 al principio
-                line = line.replace(line,line[1:])
+            if not ContainsText(line):
+                if not columnsOk:
+                    if separator[1] != None:
+                        line = main_file_lines[i].split(separatorChar)
+                    else:
+                        line = main_file_lines[i]
+
+                    if separator[1] == None:
+                        line = line.replace("\n","")
+                        line = line + "," + line + "\n"
+                    elif len(line) > 1:
+                        line = line[0] + "," + line[1] + "\n"
+                    elif separator[1] != None:
+                        line = line[0] + "," + line[0] + "\n"
+ 
                 
-            if not separator[0]: # reemplaza el separador por comas
-                line = line.replace(separatorChar,",")
-            fcsv.write(line)
+                if not numFormat and line[0] == "9": # Agrega un 0 al principio de los celulares que no lo tienen
+                    line = line.replace(line,"0"+line)
+                
+                if (phoneStartsW0) and ("key" not in line) and (line[1] != "9"): # Saca el 0 de los telefonos fijos en caso de que todos los numeros tengan 0 al principio
+                    line = line.replace(line,line[1:])
+
+                if not separator[0] and separator[1] != None: # reemplaza el separador por comas 
+                    line = line.replace(separatorChar,",")
+                fcsv.write(line)
 
 def Reporter(corrections):
     print("\nContiene comillas dobles o simples: ", not corrections[4])
     print("Tiene headers: ",corrections[0])
     print("Tiene formato numerico: ",corrections[1])
     print("Tiene separador correcto: ",corrections[2][0])
-    print("Separador: ",corrections[2][1][0])
+    print("Separador: ",corrections[2][1][0] if corrections[2][1] != None else "None")
     print("Cantidad de colunas:",corrections[3][1])
     print("Los telefonos fijos empiezan con 0: ",corrections[5], "\n")
 
