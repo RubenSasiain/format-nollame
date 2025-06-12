@@ -5,7 +5,7 @@ import re
 def Format_Detector(file):
     """
     Detecta los fallos del formato del archivo csv y los reporta a la salida estandar. 
-    Ord: Headers, formato numerico, separadores
+    Ord: Headers, formato numerico, separadores, cantidad de columnas, solo caracteres necesarios, los celulares empiezan con 0 y los telefonos no
     """
     headers = False
     numFormat = False
