@@ -1,7 +1,9 @@
 import sys
 import os
 import re
+import shutil
 from datetime import datetime
+
 
 def logger(message):
     with open("nollame_logs.log", "a") as f:
@@ -97,7 +99,7 @@ def CSVformatter(corrections, file, output_fileName):
     separator = corrections[2]
     separatorChar = separator[1][0] if separator[1] != None else separator[1]
     columnsOk = corrections[3][0]
-    onlyNeededCh = corrections[4]
+    hasCuotes = corrections[4]
     phoneStartsW0 = corrections[5]
 
     NewOutputFile(output_fileName)
@@ -108,7 +110,7 @@ def CSVformatter(corrections, file, output_fileName):
     with open(output_fileName,'a') as fcsv: # Edita el archivo nuevo
         for i, line in enumerate(main_file_lines):
 
-            if not onlyNeededCh:
+            if hasCuotes:
                 line = re.sub(r'"', "", line)
                 line = re.sub(r"'", "", line)
                 line = re.sub(r"\t","", line)
@@ -151,7 +153,8 @@ def Reporter(corrections):
     logger("Tiene separador correcto: ",corrections[2][0])
     logger("Separador: ",corrections[2][1][0] if corrections[2][1] != None else "None")
     logger("Cantidad de colunas:",corrections[3][1])
-    logger("Los telefonos fijos empiezan con 0: ",corrections[5], "\n")
+    logger("Los telefonos fijos empiezan con 0: ",corrections[5])
+    logger("Alguna linea tiene Texto: ", corrections[6])
     logger("---------------------------------------------------------------\n\n\n")
 
 def PendingCorrections(corrections):
@@ -190,4 +193,6 @@ if __name__ == "__main__":
         sys.exit(1)
     else:
         logger("El archivo tiene el formato correcto")
+        shutil.copy(file,output_fileName)
+        sys.exit(1)
         
