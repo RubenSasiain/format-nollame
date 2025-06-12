@@ -24,7 +24,7 @@ def Format_Detector(file):
     separator = (False, None)
     columnsOk = (False, 0)
     hadCuotes = False
-    phoneStartsW0 = False
+    phoneFormat = False
     containText = False
 
     def CuotesDetector(line):
@@ -73,14 +73,14 @@ def Format_Detector(file):
             else:
                 containText = ContainsText(line)
 
-            if line[0] == "0" and line[1] != "9":
-                phoneStartsW0 = True
-
             if i != 0:
                 if line[0] == "0" and line[1] == "9":
                     numFormat = True
 
-    return headers, numFormat, separator, columnsOk, hadCuotes, phoneStartsW0, containText
+                if line[0] == "0" and line[1] != "9":
+                    phoneFormat = False
+
+    return headers, numFormat, separator, columnsOk, hadCuotes, phoneFormat, containText
 
 def NewOutputFile(output_fileName):
     if os.path.exists(output_fileName): # Elimina el archivo si existe
@@ -147,14 +147,14 @@ def CSVformatter(corrections, file, output_fileName):
 
 def Reporter(corrections):
     logger("---------------------------------------------------------------")
-    logger("\nContiene comillas dobles o simples: ", not corrections[4])
-    logger("Tiene headers: ",corrections[0])
-    logger("Tiene formato numerico: ",corrections[1])
-    logger("Tiene separador correcto: ",corrections[2][0])
-    logger("Separador: ",corrections[2][1][0] if corrections[2][1] != None else "None")
-    logger("Cantidad de colunas:",corrections[3][1])
-    logger("Los telefonos fijos empiezan con 0: ",corrections[5])
-    logger("Alguna linea tiene Texto: ", corrections[6])
+    logger("Contiene comillas dobles o simples: " + str( not corrections[4]))
+    logger("Tiene headers: " + str(corrections[0]))
+    logger("Tiene formato numerico: "+ str(corrections[1]))
+    logger("Tiene separador correcto: "+ str(corrections[2][0]))
+    logger("Separador: " + str(corrections[2][1][0] if corrections[2][1] != None else "None"))
+    logger("Cantidad de colunas: " + str(corrections[3][1]))
+    logger("Los telefonos fijos empiezan con 0: " + str(corrections[5]))
+    logger("Alguna linea tiene Texto: " + str(corrections[6]))
     logger("---------------------------------------------------------------\n\n\n")
 
 def PendingCorrections(corrections):
@@ -188,11 +188,11 @@ if __name__ == "__main__":
     if PendingCorrections(corrections):
         logger("El archivo no tiene el formato correcto")
         CSVformatter(corrections, full_route_file, output_fileName)
-        logger("El archivo fue formateado en: ",output_fileName)
+        logger("El archivo fue formateado en: " + str(output_fileName))
     else:
         logger("El archivo tiene el formato correcto")
         shutil.copy(file,output_fileName)
-        logger("El archivo fue copiado en: ",output_fileName)
+        logger("El archivo fue copiado en: " + str(output_fileName))
 
     sys.exit(1)
         
