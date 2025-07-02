@@ -149,7 +149,7 @@ def CSVformatter(corrections, file, output_fileName):
 
 def Reporter(corrections):
     logger("---------------------------------------------------------------")
-    logger("Contiene comillas dobles o simples: " + str(not corrections[4]))
+    logger("Contiene comillas dobles o simples: " + str(corrections[4]))
     logger("Tiene headers: " + str(corrections[0]))
     logger("Tiene formato numerico: "+ str(corrections[1]))
     logger("Tiene separador correcto: "+ str(corrections[2][0]))
@@ -159,10 +159,31 @@ def Reporter(corrections):
     logger("Alguna linea tiene Texto: " + str(corrections[6]))
 
 def PendingCorrections(corrections):
-    if False in corrections:
+
+    if not corrections[0]:
+        print("0")
         return True
-    else:
-        return False
+    if corrections[1]:
+        print("1")
+        return True
+    if not corrections[2][0]:
+        print("2")
+        return True
+    if not corrections[3][0]:
+        print("3")
+        return True
+    if corrections[4]:
+        print("4")
+        return True
+    if corrections[5]:
+        print("5")  
+        return True
+    if corrections[6]:
+        print("6")
+        return True
+    
+    return False
+
 
 def usage():
     if len(sys.argv) >= 3 or len(sys.argv) < 2:
@@ -185,6 +206,7 @@ if __name__ == "__main__":
 
     corrections = Format_Detector(full_route_file)
     Reporter(corrections)
+    print(corrections)
 
     if PendingCorrections(corrections):
         logger("El archivo no tiene el formato correcto")
