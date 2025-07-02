@@ -3,10 +3,11 @@ import os
 import re
 import shutil
 from datetime import datetime
-
+LOG_FILENAME = "nollame_logs.log"
+Logs_Route = "./logs/"
 
 def logger(message):
-    with open("nollame_logs.log", "a") as f:
+    with open(Logs_Route + LOG_FILENAME, "a") as f:
         f.write(f"{datetime.now()} - {message}\n")
 
 def ContainsText(line):
