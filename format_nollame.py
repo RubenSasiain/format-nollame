@@ -181,7 +181,6 @@ def PendingCorrections(corrections):
     if corrections[6]:
         print("6")
         return True
-    
     return False
 
 
