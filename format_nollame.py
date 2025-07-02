@@ -5,10 +5,10 @@ import shutil
 from datetime import datetime
 
 LOG_FILENAME = "nollame_logs.log"
-Logs_Route = "./logs/"
+Logs_Route = ""
 
 def logger(message):
-    with open(Logs_Route + LOG_FILENAME, "a") as f:
+    with open((Logs_Route + LOG_FILENAME), "a") as f:
         f.write(f"{datetime.now()} - {message}\n")
 
 def ContainsText(line):
@@ -207,7 +207,6 @@ if __name__ == "__main__":
 
     corrections = Format_Detector(full_route_file)
     Reporter(corrections)
-    print(corrections)
 
     if PendingCorrections(corrections):
         logger("El archivo no tiene el formato correcto")
